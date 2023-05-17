@@ -24,14 +24,14 @@ namespace ExcelReporting.Controllers
         }
 
         [HttpGet("{type}/{startDate}/{endDate}/{email}")] // :int isn't necessary
-        public async Task<ActionResult<SalesByProductDto>> GetItem(int type, DateTime startDate, DateTime endDate, string email, IFormFile file)
+        public async Task<ActionResult<SalesByProductDto>> GetItem(int type, DateTime startDate, DateTime endDate, string email)
         {
             try
             {   /*
                     1 main method will be here which will then call ISaleRepository methods depent
                     on type parameter, and this method will be created at static ReportHandler class
                  */
-                var sales = await this._saleRepository.GetSalesByProduct(startDate, endDate);
+                var sales = await this._saleRepository.Report(type, startDate, endDate, email);
 
                 if (sales == null)
                 {
