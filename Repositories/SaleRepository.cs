@@ -38,5 +38,34 @@ namespace ExcelReporting.Repositories
         {
             throw new NotImplementedException();
         }
+
+        Task<IEnumerable<SaleModel>> Report(int type, DateTime startDate, DateTime endDate, string email)
+        {
+            // ISaleRepository handler = new SaleRepository();
+            switch (type)
+            {
+                case 1: //GetSalesByProduct
+                    
+                    break;
+                case 2: //GetSalesByCountry
+
+                    break;
+                case 3: //GetSalesBySegment
+
+                    break;
+                case 4: //GetDiscountsByProduct
+
+                    break;
+                default:
+
+                    break;
+            }
+              throw new NotImplementedException();
+        }
+
+        Task<IEnumerable<SaleModel>> ISaleRepository.Report(int type, DateTime startDate, DateTime endDate, string email)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

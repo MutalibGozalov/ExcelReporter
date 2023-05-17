@@ -24,7 +24,7 @@ namespace ExcelReporting.Controllers
         }
 
         [HttpGet("{type}/{startDate}/{endDate}/{email}")] // :int isn't necessary
-        public async Task<ActionResult<SalesByProductDto>> GetItem(int type, DateTime startDate, DateTime endDate, string email)
+        public async Task<ActionResult<SalesByProductDto>> GetItem(int type, DateTime startDate, DateTime endDate, string email, IFormFile file)
         {
             try
             {   /*
@@ -49,5 +49,29 @@ namespace ExcelReporting.Controllers
                 "Error retrieving data from the database");
             }
         }
+
+        [HttpPost]
+        public async Task<ActionResult<SalesByProductDto>> PostXLXS(IFormFile file)
+        {
+            try
+            {   
+                var sales = await this._saleRepository.GetSalesByProduct(DateTime.Now, DateTime.Now);
+                if (sales == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    var productDto = sales.ToSalesByProduct();
+                    return Ok(productDto);
+                }
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                "Error retrieving data from the database");
+            }
+        }
+
     }
 }
