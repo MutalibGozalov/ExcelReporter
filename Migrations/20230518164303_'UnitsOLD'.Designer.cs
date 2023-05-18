@@ -3,6 +3,7 @@ using System;
 using ExcelReporting.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelReporting.Migrations
 {
     [DbContext(typeof(ExcelReporterDbContext))]
-    partial class ExcelReporterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230518164303_'UnitsOLD'")]
+    partial class UnitsOLD
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.5");

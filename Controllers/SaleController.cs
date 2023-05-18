@@ -1,3 +1,6 @@
+using System.Text;
+using System.Net;
+using System.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,68 +13,143 @@ using ExcelReporting.Repositories.Contracts;
 using ExcelReporting.Models.DTOs;
 using ExcelReporting.Extensions;
 
-namespace ExcelReporting.Controllers
+using System.Data;
+using System.Data.OleDb;
+
+namespace ExcelReporting.Controllers;
+
+[ApiController]
+[Route("api/[Controller]")]
+public class SaleController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[Controller]")]
-    public class SaleController : ControllerBase
+    private readonly ISaleRepository _saleRepository;
+    private Microsoft.AspNetCore.Hosting.IHostingEnvironment _environment;
+
+    public SaleController(ISaleRepository saleRepository, [FromServices] Microsoft.AspNetCore.Hosting.IHostingEnvironment environment)
     {
-        private readonly ISaleRepository _saleRepository;
+        this._saleRepository = saleRepository;
+        this._environment = environment;
+        _environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+        
+    }
 
-        public SaleController(ISaleRepository saleRepository)
-        {
-            this._saleRepository = saleRepository;
-        }
+    [HttpGet("{type}/{startDate}/{endDate}/{email}")] // :int isn't necessary
+    public async Task<ActionResult<IEnumerable<SalesByProductDto>>> GetItem(int type, DateTime startDate, DateTime endDate, string email)
+    {
+        try
+        {   /*
+                1 main method will be here which will then call ISaleRepository methods depent
+                on type parameter, and this method will be created at static ReportHandler class
+            */
+            var sales = await this._saleRepository.Report(type, startDate, endDate, email);
 
-        [HttpGet("{type}/{startDate}/{endDate}/{email}")] // :int isn't necessary
-        public async Task<ActionResult<SalesByProductDto>> GetItem(int type, DateTime startDate, DateTime endDate, string email)
-        {
-            try
-            {   /*
-                    1 main method will be here which will then call ISaleRepository methods depent
-                    on type parameter, and this method will be created at static ReportHandler class
-                 */
-                var sales = await this._saleRepository.Report(type, startDate, endDate, email);
-
-                if (sales == null)
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    var productDto = sales.ToSalesByProduct();
-                    return Ok(productDto);
-                }
-            }
-            catch (System.Exception)
+            if (sales == null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, 
-                "Error retrieving data from the database");
+                return NotFound();
             }
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<SalesByProductDto>> PostXLXS(IFormFile file)
-        {
-            try
-            {   
-                var sales = await this._saleRepository.GetSalesByProduct(DateTime.Now, DateTime.Now);
-                if (sales == null)
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    var productDto = sales.ToSalesByProduct();
-                    return Ok(productDto);
-                }
-            }
-            catch (System.Exception)
+            else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                "Error retrieving data from the database");
+                //var productDto = sales.ToSalesByProduct();
+                List<SaleModel> productDtos = new List<SaleModel>();
+                foreach (var itemGroup in sales)
+                {
+                    System.Console.WriteLine(itemGroup.Key);
+                    foreach (var item in itemGroup)
+                    {
+                        productDtos.Add(item);
+                    }
+                }
+                return Ok(productDtos.ToSalesByProduct());
             }
         }
+        catch (System.Exception m)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+            m.Message);
+        }
+    }
 
+    [HttpPost]
+    public async Task<ActionResult<string>> PostXLXS(IFormFile file)
+    { 
+        // try
+        // {
+            if (file != null)
+            {
+                string path = Path.Combine(this._environment.WebRootPath, "Uploads");
+            
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                
+                string fileName = Path.GetFileName(file.FileName);
+                string filePath = Path.Combine(path, fileName);
+                using (FileStream stream = new FileStream(filePath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                }
+
+
+                OleDbConnection connection = new(connectionString: $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={filePath};Extended Properties=\"Excel 8.0; HDR = YES\";");
+                connection.Open();
+                string query = "SELECT * FROM [SHEET1$]";
+                OleDbDataAdapter da = new OleDbDataAdapter(query, connection);
+
+
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                connection.Dispose();
+
+
+                List<SaleModel> saleList = new List<SaleModel>();
+
+                List<string> rows = new List<string>();
+                int i = 1;
+                foreach (DataRow item in dt.Rows)
+                {
+                    rows.Add($"{i}");
+                    i++;
+                    foreach (var cell in item.ItemArray)
+                    {
+                        rows.Add(cell.ToString().Trim());
+                    }
+                    saleList.Add(
+                        new SaleModel() 
+                        {
+                            Id = int.Parse(rows[0]),
+                            Segment = (Segment) Enum.Parse(typeof(Segment), rows[1].Replace(" ", ""), true),
+                            Country = rows[2],
+                            Product = rows[3],
+                            DiscountBand = (Discount) Enum.Parse(typeof(Discount), rows[4], true),
+                            UnitsSold = decimal.Parse(rows[5]),
+                            ManufacturingPrice = decimal.Parse(rows[6]),
+                            SalePrice = decimal.Parse(rows[7]),
+                            GrossSales = decimal.Parse(rows[8]),
+                            Discount = decimal.Parse(rows[9]),
+                            Sales = decimal.Parse(rows[10]),
+                            COGS = decimal.Parse(rows[11]),
+                            Profit = decimal.Parse(rows[12]),
+                            Date = DateTime.Parse(rows[13])
+                        });
+                    rows.Clear();
+                }
+
+                await this._saleRepository.SaveToDb(saleList);
+                return Ok("data saved");
+
+            }
+            else
+            {
+                return Ok("File is null :/");    
+            }
+
+        // }
+        // catch (System.Exception m)
+        // {
+        //     throw;
+        //     return StatusCode(StatusCodes.Status500InternalServerError, 
+        //     m.Message);
+        // }
     }
 }

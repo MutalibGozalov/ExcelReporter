@@ -21,7 +21,7 @@ namespace ExcelReporting.Migrations
                     Country = table.Column<string>(type: "TEXT", nullable: true),
                     Product = table.Column<string>(type: "TEXT", nullable: true),
                     DiscountBand = table.Column<int>(type: "INTEGER", nullable: false),
-                    UnitsSold = table.Column<int>(type: "INTEGER", nullable: false),
+                    UnitsSold = table.Column<decimal>(type: "TEXT", nullable: false),
                     ManufacturingPrice = table.Column<decimal>(type: "TEXT", nullable: false),
                     SalePrice = table.Column<decimal>(type: "TEXT", nullable: false),
                     GrossSales = table.Column<decimal>(type: "TEXT", nullable: false),

@@ -62,8 +62,8 @@ namespace ExcelReporting.Migrations
                     b.Property<int>("Segment")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("UnitsSold")
-                        .HasColumnType("INTEGER");
+                    b.Property<decimal>("UnitsSold")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

@@ -10,5 +10,7 @@
    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="*" />
+    <PackageReference Include="ExcelMapper" Version="5.2.483"/>
+    <PackageReference Include="System.Data.OleDb" Version="6.0.0"/>
   </ItemGroup>
 </Project>
