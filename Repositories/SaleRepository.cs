@@ -22,26 +22,15 @@ namespace ExcelReporting.Repositories
 
         public async Task<IEnumerable<IGrouping<string, SaleModel>>> GetDiscountsByProduct(DateTime startDate, DateTime endDate)
         {
-           //var products1 = await this._context.Sales.Where<SaleModel>(m => m.Date > startDate && m.Date < endDate).GroupBy(m => m.Product).ToListAsync();
+            var sales = await _context.Sales
+                .Where(m => m.Date > startDate && m.Date < endDate)
+                .ToListAsync();
 
-           var products = await (from m in _context.Sales
-                                  where m.Date > startDate && m.Date < endDate
-                                  group m by m.Country into newGroup
-                                  orderby newGroup.Key
-                                  select newGroup).ToListAsync();
+            var products = sales
+                .GroupBy(m => m.Product)
+                .ToList();
 
            return products;
-        }
-
-        public async Task<IEnumerable<IGrouping<string, SaleModel>>> GetSalesByCountry(DateTime startDate, DateTime endDate)
-        {
-            //var products = await this._context.Sales.Where<SaleModel>(m => m.Date > startDate && m.Date < endDate).GroupBy(m => m.Country).ToListAsync();
-            var products = await (from m in _context.Sales
-                                  where m.Date > startDate && m.Date < endDate
-                                  group m by m.Country into newGroup
-                                  orderby newGroup.Key
-                                  select newGroup).ToListAsync();
-            return products;
         }
 
         public async Task<IEnumerable<IGrouping<string, SaleModel>>> GetSalesByProduct(DateTime startDate, DateTime endDate)
@@ -57,41 +46,56 @@ namespace ExcelReporting.Repositories
                 .ToListAsync();
 
             var products = sales
-                .GroupBy(m => m.Country)
+                .GroupBy(m => m.Product)
                 .ToList();
 
             return products;
         }
 
-        public async Task<IEnumerable<IGrouping<string, SaleModel>>> GetSalesBySegment(DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<IGrouping<string, SaleModel>>> GetSalesByCountry(DateTime startDate, DateTime endDate)
         {
-            //var products = await this._context.Sales.Where<SaleModel>(m => m.Date > startDate && m.Date < endDate).GroupBy(m => m.Segment).ToListAsync();
-            var products = await (from m in _context.Sales
-                                  where m.Date > startDate && m.Date < endDate
-                                  group m by m.Country into newGroup
-                                  orderby newGroup.Key
-                                  select newGroup).ToListAsync();
+            var sales = await _context.Sales
+                .Where(m => m.Date > startDate && m.Date < endDate)
+                .ToListAsync();
+
+            var products = sales
+                .GroupBy(m => m.Country)
+                .ToList();
+                
             return products;
         }
 
-        public async Task<IEnumerable<IGrouping<string, SaleModel>>> Report(int type, DateTime startDate, DateTime endDate, string email)
+        public async Task<IEnumerable<IGrouping<string, SaleModel>>> GetSalesBySegment(DateTime startDate, DateTime endDate)
+        {
+
+            var sales = await _context.Sales
+                .Where(m => m.Date > startDate && m.Date < endDate)
+                .ToListAsync();
+
+            var products = sales
+                .GroupBy(m => m.Segment.ToString())
+                .ToList();
+                
+            return products;
+        }
+
+        public async Task<IEnumerable<IGrouping<string, SaleModel>>> Report(ReportType type, DateTime startDate, DateTime endDate, string email)
         {
             
             switch (type)
             {
-                case 1: //GetSalesByProduct
+                case ReportType.SalesByProduct: //GetSalesByProduct
                    return await GetSalesByProduct(startDate, endDate);
-                case 2: //GetSalesByCountry
+                case ReportType.SalesByCountry: //GetSalesByCountry
                     return await GetSalesByCountry(startDate, endDate);
-                case 3: //GetSalesBySegment
+                case ReportType.SalesBySegment: //GetSalesBySegment
                     return await GetSalesBySegment(startDate, endDate);
-                case 4: //GetDiscountsByProduct
+                case ReportType.DiscountsByProduct: //GetDiscountsByProduct
                     return await GetDiscountsByProduct(startDate, endDate);
                 default:
-
-                    break;
+                    throw new NotImplementedException();
             }
-              throw new NotImplementedException();
+
         }
 
         public async Task SaveToDb(List<SaleModel> saleList)
@@ -104,16 +108,3 @@ namespace ExcelReporting.Repositories
         }
     }
 }
-
-
-
-
-
-/*
-
-
-The LINQ expression 'DbSet<SaleModel>()
-    .Where(m => m.Date > __startDate_0 && m.Date < __endDate_1)
-    .GroupBy(m => m.Country)
-    .OrderBy(newGroup => newGroup.Key)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
-*/

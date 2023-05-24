@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ExcelReporting.Data;
 using ExcelReporting.Repositories;
 using ExcelReporting.Repositories.Contracts;
+using System.Text.Json.Serialization;
 
 internal class Program
 {
@@ -12,7 +13,8 @@ internal class Program
 
         // Add services to the container.
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers().AddJsonOptions(options => 
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddScoped<ISaleRepository, SaleRepository>();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();

@@ -34,7 +34,7 @@ public class SaleController : ControllerBase
     }
 
     [HttpGet("{type}/{startDate}/{endDate}/{email}")] // :int isn't necessary
-    public async Task<ActionResult<IEnumerable<SalesByProductDto>>> GetItem(int type, DateTime startDate, DateTime endDate, string email)
+    public async Task<ActionResult<IEnumerable<SaleModel>>> GetItem(ReportType type, DateTime startDate, DateTime endDate, string email)
     {
         try
         {   /*
@@ -49,17 +49,26 @@ public class SaleController : ControllerBase
             }
             else
             {
-                //var productDto = sales.ToSalesByProduct();
-                List<SaleModel> productDtos = new List<SaleModel>();
+                List<SaleModel> products = new List<SaleModel>();
                 foreach (var itemGroup in sales)
                 {
-                    System.Console.WriteLine(itemGroup.Key);
                     foreach (var item in itemGroup)
                     {
-                        productDtos.Add(item);
+                        products.Add(item);
                     }
                 }
-                return Ok(productDtos.ToSalesByProduct());
+
+
+                switch (type)
+                {
+                    case ReportType.SalesByProduct:
+                        
+                    default:
+                        break;
+                }
+
+
+                return Ok(products);
             }
         }
         catch (System.Exception m)
@@ -72,8 +81,8 @@ public class SaleController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<string>> PostXLXS(IFormFile file)
     { 
-        // try
-        // {
+        try
+        {
             if (file != null)
             {
                 string path = Path.Combine(this._environment.WebRootPath, "Uploads");
@@ -144,12 +153,12 @@ public class SaleController : ControllerBase
                 return Ok("File is null :/");    
             }
 
-        // }
-        // catch (System.Exception m)
-        // {
-        //     throw;
-        //     return StatusCode(StatusCodes.Status500InternalServerError, 
-        //     m.Message);
-        // }
+        }
+        catch (System.Exception m)
+        {
+            throw;
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+            m.Message);
+        }
     }
 }
