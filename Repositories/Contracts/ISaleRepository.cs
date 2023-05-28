@@ -14,7 +14,7 @@ namespace ExcelReporting.Repositories.Contracts
         Task<IEnumerable<IGrouping<string, SaleModel>>> GetSalesByProduct(DateTime startDate, DateTime endDate);
         Task<IEnumerable<IGrouping<string, SaleModel>>> GetDiscountsByProduct(DateTime startDate, DateTime endDate);
 
-        Task<IEnumerable<IGrouping<string, SaleModel>>> Report(ReportType type, DateTime startDate, DateTime endDate, string email);
+        Task<IEnumerable<IGrouping<string, SaleModel>>> GetSalesBy(ReportType type, DateTime startDate, DateTime endDate, string email);
         
         Task SaveToDb(List<SaleModel> saleList);
        

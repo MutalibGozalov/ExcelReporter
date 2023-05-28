@@ -79,7 +79,7 @@ namespace ExcelReporting.Repositories
             return products;
         }
 
-        public async Task<IEnumerable<IGrouping<string, SaleModel>>> Report(ReportType type, DateTime startDate, DateTime endDate, string email)
+        public async Task<IEnumerable<IGrouping<string, SaleModel>>> GetSalesBy(ReportType type, DateTime startDate, DateTime endDate, string email)
         {
             
             switch (type)

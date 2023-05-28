@@ -12,7 +12,7 @@ using ExcelReporting.Repositories;
 using ExcelReporting.Repositories.Contracts;
 using ExcelReporting.Models.DTOs;
 using ExcelReporting.Extensions;
-
+using ExcelReporting.Services;
 using System.Data;
 using System.Data.OleDb;
 
@@ -33,42 +33,23 @@ public class SaleController : ControllerBase
         
     }
 
-    [HttpGet("{type}/{startDate}/{endDate}/{email}")] // :int isn't necessary
-    public async Task<ActionResult<IEnumerable<SaleModel>>> GetItem(ReportType type, DateTime startDate, DateTime endDate, string email)
+    [HttpGet("{type}/{startDate}/{endDate}/{email}")]
+    public async Task<ActionResult<string>> GetItem(ReportType type, DateTime startDate, DateTime endDate, string email)
     {
         try
-        {   /*
-                1 main method will be here which will then call ISaleRepository methods depent
-                on type parameter, and this method will be created at static ReportHandler class
-            */
-            var sales = await this._saleRepository.Report(type, startDate, endDate, email);
+        {   
+            var sales = await this._saleRepository.GetSalesBy(type, startDate, endDate, email);
 
             if (sales == null)
             {
-                return NotFound();
+                return NotFound("not found");
             }
             else
             {
-                List<SaleModel> products = new List<SaleModel>();
-                foreach (var itemGroup in sales)
-                {
-                    foreach (var item in itemGroup)
-                    {
-                        products.Add(item);
-                    }
-                }
 
+                string content = ReporterService.ReportSalesByProduct(sales, type);
 
-                switch (type)
-                {
-                    case ReportType.SalesByProduct:
-                        
-                    default:
-                        break;
-                }
-
-
-                return Ok(products);
+                return Ok(content);
             }
         }
         catch (System.Exception m)
@@ -156,7 +137,6 @@ public class SaleController : ControllerBase
         }
         catch (System.Exception m)
         {
-            throw;
             return StatusCode(StatusCodes.Status500InternalServerError, 
             m.Message);
         }
